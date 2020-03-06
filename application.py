@@ -1,7 +1,6 @@
-import hashlib
 import flask
 
-secret_key = '01'
+from views import UserView
 
 
 def create_application():
@@ -26,20 +25,9 @@ def create_database():
     db.create_all()
 
 
-@application.route('/registration/', methods=['GET', 'POST'])
-def registration():
-    if flask.request.method == 'GET':
-        return flask.render_template('registration.html')
-
-    email = flask.request.form.get('email')
-    password = flask.request.form.get('password') + secret_key
-
-    hasher = hashlib.sha256()
-    hasher.update(password.encode('utf-8'))
-
-    hashed_password = hasher.hexdigest()
-
-    return hashed_password
-
+application.add_url_rule(
+    rule='/registration/',
+    view_func=UserView.as_view('registration'),
+)
 
 application.run()
