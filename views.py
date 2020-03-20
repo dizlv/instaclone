@@ -1,7 +1,16 @@
 import flask
+
 from flask.views import MethodView
 
-from werkzeug.security import generate_password_hash
+from flask_login import (
+    login_user,
+)
+
+
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash,
+)
 
 from database import db
 from models import User
@@ -32,4 +41,31 @@ class UserView(MethodView):
             hashed_password=hashed_password,
         )
 
-        return hashed_password
+        return 'Registration completed'
+
+
+class UserLoginView(MethodView):
+    def get(self):
+        return flask.render_template('login.html')
+
+    def post(self):
+        email = flask.request.form.get('email')
+        password = flask.request.form.get('password')
+
+        user = User.query.filter_by(email=email).first()
+
+        if user is None:
+            return 'Such user not found'
+
+        is_correct = check_password_hash(
+            pwhash=user.password,
+            password=password,
+        )
+
+        if is_correct:
+            login_user(user=user)
+
+            return 'Logged in successfully'
+
+        return 'Wrong Credentials'
+

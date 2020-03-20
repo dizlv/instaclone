@@ -1,6 +1,9 @@
 import flask
 
-from views import UserView
+from views import (
+    UserView,
+    UserLoginView,
+)
 
 
 def create_application():
@@ -11,6 +14,10 @@ def create_application():
     from database import db
 
     db.init_app(app=application)
+
+    from auth import login_manager
+
+    login_manager.init_app(app=application)
 
     return application
 
@@ -28,6 +35,11 @@ def create_database():
 application.add_url_rule(
     rule='/registration/',
     view_func=UserView.as_view('registration'),
+)
+
+application.add_url_rule(
+    rule='/login/',
+    view_func=UserLoginView.as_view('login'),
 )
 
 application.run()
