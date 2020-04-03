@@ -1,3 +1,6 @@
+import time
+import hashlib
+
 import flask
 
 from flask.views import MethodView
@@ -89,13 +92,18 @@ class UploadPhotoView(MethodView):
     def post(self):
         photo_file = flask.request.files['photo']
 
-        secure_original_file_name = secure_filename(photo_file.filename)
+        file_name_parts = photo_file.filename.split('.')
+        extension = file_name_parts[-1]
+
+        secure_original_file_name = secure_filename(photo_file.filename) + str(time.time())
+        secure_original_file_name = hashlib.sha256(secure_original_file_name.encode('utf-8')).hexdigest()
+
         file_name = flask.current_app.config['UPLOADS_DIRECTORY'] / secure_original_file_name
 
-        photo_file.save(str(file_name))
+        photo_file.save(f'{file_name}.{extension}')
 
         photo = Photo(
-            path=secure_original_file_name,
+            path=f'{secure_original_file_name}.{extension}',
             user_id=current_user.id,
         )
 
