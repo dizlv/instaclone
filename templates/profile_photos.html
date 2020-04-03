@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile Photos{% endblock %}
+
+{% block body %}
+    {% for photo in photos %}
+        <img src="{{ photo.photo_link() }}" alt="">
+    {% endfor %}
+{% endblock %}
