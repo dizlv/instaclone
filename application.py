@@ -1,6 +1,12 @@
 import flask
 
-from views import UserView
+from views import (
+    UserProfileView,
+    UserRegistrationView,
+    UserLoginView,
+    UploadPhotoView,
+    ViewFile,
+)
 
 
 def create_application():
@@ -11,6 +17,10 @@ def create_application():
     from database import db
 
     db.init_app(app=application)
+
+    from auth import login_manager
+
+    login_manager.init_app(app=application)
 
     return application
 
@@ -27,7 +37,27 @@ def create_database():
 
 application.add_url_rule(
     rule='/registration/',
-    view_func=UserView.as_view('registration'),
+    view_func=UserRegistrationView.as_view('registration'),
+)
+
+application.add_url_rule(
+    rule='/login/',
+    view_func=UserLoginView.as_view('login'),
+)
+
+application.add_url_rule(
+    rule='/upload_photo/',
+    view_func=UploadPhotoView.as_view('upload-photo'),
+)
+
+application.add_url_rule(
+    rule='/uploads/<file_name>/',
+    view_func=ViewFile.as_view('view-file'),
+)
+
+application.add_url_rule(
+    rule='/user/<user_id>/',
+    view_func=UserProfileView.as_view('user-profile'),
 )
 
 application.run()
