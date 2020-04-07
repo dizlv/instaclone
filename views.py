@@ -24,6 +24,7 @@ from database import db
 from models import (
     User,
     Photo,
+    Like,
 )
 
 
@@ -134,3 +135,28 @@ class UserProfileView(MethodView):
             template_name_or_list='profile_photos.html',
             photos=user.photos,
         )
+
+
+class AddLikeView(MethodView):
+    decorators = [
+        login_required,
+    ]
+
+    def post(self, photo_id):
+        already_liked = Like.query.filter(
+            Like.user_id == current_user.id,
+            Like.photo_id == photo_id,
+        ).count()
+
+        if already_liked:
+            return 'Sorry, we can not accept your like more than once!'
+
+        like = Like(
+            user_id=current_user.id,
+            photo_id=photo_id,
+        )
+
+        db.session.add(like)
+        db.session.commit()
+
+        return 'ok'
