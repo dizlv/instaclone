@@ -12,6 +12,8 @@ from flask_login import (
 )
 
 
+from werkzeug.exceptions import BadRequest
+
 from werkzeug.security import (
     generate_password_hash,
     check_password_hash,
@@ -24,7 +26,10 @@ from database import db
 from models import (
     User,
     Photo,
+    Like,
 )
+
+from exceptions import CoreException
 
 
 def create_user(email, hashed_password):
@@ -134,3 +139,61 @@ class UserProfileView(MethodView):
             template_name_or_list='profile_photos.html',
             photos=user.photos,
         )
+
+
+class PhotoDetailView(MethodView):
+    def get(self, photo_id):
+        photo = Photo.query.get(photo_id)
+
+        if photo is None:
+            return 'Photo not found', 404
+
+        return flask.render_template(
+            template_name_or_list='photo_detail.html',
+            photo=photo,
+        )
+
+
+class AddLikeView(MethodView):
+    decorators = [
+        login_required,
+    ]
+
+    def post(self, photo_id):
+        photo = Photo.query.get(photo_id)
+
+        if photo is None:
+            return 'Photo not found', 404
+
+        try:
+            like = photo.add_like(from_user=current_user)
+
+        except CoreException as exception:
+            raise BadRequest(description=str(exception)) from exception
+
+        db.session.add(like)
+        db.session.commit()
+
+        return 'ok'
+
+
+class AddCommentView(MethodView):
+    decorators = [
+        login_required,
+    ]
+
+    def post(self, photo_id):
+        photo = Photo.query.get(photo_id)
+
+        if photo is None:
+            return 'Photo not found', 404
+
+        comment = photo.add_comment(
+            from_user=current_user,
+            content=flask.request.form['content'],
+        )
+
+        db.session.add(comment)
+        db.session.commit()
+
+        return 'ok'
