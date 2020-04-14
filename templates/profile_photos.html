@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile Photos{% endblock %}
+
+{% block body %}
+    {% for photo in photos %}
+        <div>
+            <img src="{{ photo.photo_link() }}" alt="">
+            <form action="{{ photo.like_link() }}" method="post">
+                <input type="submit" value="{{ photo.likes|length or 0 }}">
+            </form>
+        </div>
+    {% endfor %}
+{% endblock %}
