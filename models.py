@@ -1,5 +1,10 @@
 from flask import url_for
 
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash,
+)
+
 from database import db
 from exceptions import CoreException
 
@@ -53,6 +58,27 @@ class User(db.Model):
 
     def get_id(self):
         return self.id
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password=password)
+
+    def check_password(self, password):
+        is_correct = check_password_hash(
+            pwhash=self.password,
+            password=password,
+        )
+
+        return is_correct
+
+    @classmethod
+    def create(cls, email, password):
+        instance = cls(
+            email=email,
+        )
+
+        instance.set_password(password=password)
+
+        return instance
 
 
 class Photo(db.Model):
