@@ -6,6 +6,9 @@ from views import (
     UserLoginView,
     UploadPhotoView,
     ViewFile,
+    AddLikeView,
+    AddCommentView,
+    PhotoDetailView,
 )
 
 
@@ -48,6 +51,21 @@ application.add_url_rule(
 application.add_url_rule(
     rule='/upload_photo/',
     view_func=UploadPhotoView.as_view('upload-photo'),
+)
+
+application.add_url_rule(
+    rule='/add_like/<photo_id>/',
+    view_func=AddLikeView.as_view('add-like'),
+)
+
+application.add_url_rule(
+    rule='/add_comment/<photo_id>/',
+    view_func=AddCommentView.as_view('add-comment'),
+)
+
+application.add_url_rule(
+    rule='/photo/<photo_id>/',
+    view_func=PhotoDetailView.as_view('photo-detail'),
 )
 
 application.add_url_rule(
