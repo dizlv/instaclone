@@ -6,18 +6,12 @@ import flask
 from flask.views import MethodView
 
 from flask_login import (
-    login_user,
     login_required,
     current_user,
 )
 
 
 from werkzeug.exceptions import BadRequest
-
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash,
-)
 
 from werkzeug.utils import secure_filename
 
@@ -26,64 +20,60 @@ from database import db
 from models import (
     User,
     Photo,
-    Like,
 )
 
-from exceptions import CoreException
+from exceptions import (
+    CoreException,
+    LoginException,
+)
 
-
-def create_user(email, hashed_password):
-    user = User(
-        email=email,
-        password=hashed_password
-    )
-
-    db.session.add(user)
-    db.session.commit()
+import forms
 
 
 class UserRegistrationView(MethodView):
     def get(self):
-        return flask.render_template('registration.html')
+        form = forms.RegistrationForm()
 
-    def post(self):
-        email = flask.request.form.get('email')
-        password = flask.request.form.get('password')
-
-        hashed_password = generate_password_hash(password=password)
-
-        create_user(
-            email=email,
-            hashed_password=hashed_password,
+        return flask.render_template(
+            template_name_or_list='registration.html',
+            form=form,
         )
 
-        return 'Registration completed'
+    def post(self):
+        form = forms.RegistrationForm()
+
+        if form.validate_on_submit():
+            form.save()
+
+        return flask.render_template(
+            template_name_or_list='registration.html',
+            form=form,
+        )
 
 
 class UserLoginView(MethodView):
     def get(self):
-        return flask.render_template('login.html')
+        form = forms.LoginForm()
 
-    def post(self):
-        email = flask.request.form.get('email')
-        password = flask.request.form.get('password')
-
-        user = User.query.filter_by(email=email).first()
-
-        if user is None:
-            return 'Such user not found'
-
-        is_correct = check_password_hash(
-            pwhash=user.password,
-            password=password,
+        return flask.render_template(
+            template_name_or_list='login.html',
+            form=form,
         )
 
-        if is_correct:
-            login_user(user=user)
+    def post(self):
+        form = forms.LoginForm()
 
-            return 'Logged in successfully'
+        if form.validate_on_submit():
+            try:
+                form.login()
 
-        return 'Wrong Credentials'
+            except LoginException as exception:
+                return str(exception)
+
+        return flask.render_template(
+            template_name_or_list='login.html',
+            form=form,
+        )
 
 
 class UploadPhotoView(MethodView):
