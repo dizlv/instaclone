@@ -1,6 +1,3 @@
-import time
-import hashlib
-
 import flask
 
 from flask.views import MethodView
@@ -10,10 +7,7 @@ from flask_login import (
     current_user,
 )
 
-
 from werkzeug.exceptions import BadRequest
-
-from werkzeug.utils import secure_filename
 
 from database import db
 
@@ -30,85 +24,92 @@ from exceptions import (
 import forms
 
 
-class UserRegistrationView(MethodView):
+class FormViewMixin:
+    form_class = None
+    template_name = None
+
+    def get_form_class(self):
+        return self.form_class
+
+    def get_form(self):
+        form_class = self.get_form_class()
+
+        form = form_class()
+
+        return form
+
+    def get_template_name(self):
+        return self.template_name
+
     def get(self):
-        form = forms.RegistrationForm()
+        form = self.get_form()
+        template_name = self.get_template_name()
 
         return flask.render_template(
-            template_name_or_list='registration.html',
+            template_name_or_list=template_name,
             form=form,
         )
 
+
+class UserRegistrationView(MethodView, FormViewMixin):
+    form_class = forms.RegistrationForm
+    template_name = 'registration.html'
+
     def post(self):
-        form = forms.RegistrationForm()
+        form = self.get_form()
 
         if form.validate_on_submit():
             form.save()
 
         return flask.render_template(
-            template_name_or_list='registration.html',
+            template_name_or_list=self.get_template_name(),
             form=form,
         )
 
 
-class UserLoginView(MethodView):
-    def get(self):
-        form = forms.LoginForm()
-
-        return flask.render_template(
-            template_name_or_list='login.html',
-            form=form,
-        )
+class UserLoginView(MethodView, FormViewMixin):
+    form_class = forms.LoginForm
+    template_name = 'login.html'
 
     def post(self):
-        form = forms.LoginForm()
+        form = self.get_form()
 
         if form.validate_on_submit():
             try:
                 form.login()
 
             except LoginException as exception:
-                return str(exception)
+                flask.flash(message=str(exception))
 
         return flask.render_template(
-            template_name_or_list='login.html',
+            template_name_or_list=self.get_template_name(),
             form=form,
         )
 
 
-class UploadPhotoView(MethodView):
+class UploadPhotoView(MethodView, FormViewMixin):
+    form_class = forms.PhotoForm
+    template_name = 'upload_photo.html'
+
     decorators = [
         login_required,
     ]
 
-    def get(self):
-        return flask.render_template('upload_photo.html')
-
     def post(self):
-        photo_file = flask.request.files['photo']
+        form = self.get_form()
 
-        file_name_parts = photo_file.filename.split('.')
-        extension = file_name_parts[-1]
+        if form.validate_on_submit():
+            photo = form.save()
 
-        secure_original_file_name = secure_filename(photo_file.filename) + str(time.time())
-        secure_original_file_name = hashlib.sha256(secure_original_file_name.encode('utf-8')).hexdigest()
+            photo_link = photo.photo_link()
+            response = flask.redirect(location=photo_link)
 
-        file_name = flask.current_app.config['UPLOADS_DIRECTORY'] / secure_original_file_name
+            return response
 
-        photo_file.save(f'{file_name}.{extension}')
-
-        photo = Photo(
-            path=f'{secure_original_file_name}.{extension}',
-            user_id=current_user.id,
+        return flask.render_template(
+            template_name_or_list=self.get_template_name(),
+            form=form,
         )
-
-        db.session.add(photo)
-        db.session.commit()
-
-        photo_link = photo.photo_link()
-        response = flask.redirect(location=photo_link)
-
-        return response
 
 
 class ViewFile(MethodView):
