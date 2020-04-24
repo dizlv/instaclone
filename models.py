@@ -1,6 +1,12 @@
 from flask import url_for
 
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash,
+)
+
 from database import db
+from exceptions import CoreException
 
 
 class User(db.Model):
@@ -32,6 +38,12 @@ class User(db.Model):
         lazy=True,
     )
 
+    comments = db.relationship(
+        'Comment',
+        backref='user',
+        lazy=True,
+    )
+
     @property
     def is_authenticated(self):
         return True
@@ -46,6 +58,27 @@ class User(db.Model):
 
     def get_id(self):
         return self.id
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password=password)
+
+    def check_password(self, password):
+        is_correct = check_password_hash(
+            pwhash=self.password,
+            password=password,
+        )
+
+        return is_correct
+
+    @classmethod
+    def create(cls, email, password):
+        instance = cls(
+            email=email,
+        )
+
+        instance.set_password(password=password)
+
+        return instance
 
 
 class Photo(db.Model):
@@ -72,6 +105,12 @@ class Photo(db.Model):
         lazy=True,
     )
 
+    comments = db.relationship(
+        'Comment',
+        backref='photo',
+        lazy=True,
+    )
+
     def photo_link(self):
         link = url_for(
             endpoint='view-file',
@@ -87,6 +126,39 @@ class Photo(db.Model):
         )
 
         return link
+
+    def comment_link(self):
+        link = url_for(
+            endpoint='add-comment',
+            photo_id=self.id,
+        )
+
+        return link
+
+    def add_like(self, from_user):
+        already_liked = Like.query.filter(
+            Like.user_id == from_user.id,
+            Like.photo_id == self.id,
+        ).count()
+
+        if already_liked:
+            raise CoreException('Sorry, we can not accept your like more than once!')
+
+        like = Like(
+            user_id=from_user.id,
+            photo_id=self.id,
+        )
+
+        return like
+
+    def add_comment(self, from_user, content):
+        comment = Comment(
+            user_id=from_user.id,
+            photo_id=self.id,
+            content=content,
+        )
+
+        return comment
 
 
 class Like(db.Model):
@@ -104,5 +176,29 @@ class Like(db.Model):
     photo_id = db.Column(
         db.Integer,
         db.ForeignKey('photo.id'),
+        nullable=False,
+    )
+
+
+class Comment(db.Model):
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id'),
+        nullable=False,
+    )
+
+    photo_id = db.Column(
+        db.Integer,
+        db.ForeignKey('photo.id'),
+        nullable=False,
+    )
+
+    content = db.Column(
+        db.String,
         nullable=False,
     )

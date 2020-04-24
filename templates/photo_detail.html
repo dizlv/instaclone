@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div>
+        <img src="{{ photo.photo_link() }}" alt="">
+
+        <form action="{{ photo.like_link() }}" method="post">
+            <input type="submit" value="{{ photo.likes|length or 0 }}">
+        </form>
+
+        <ul>
+            {% for comment in photo.comments %}
+                <li>{{ comment.user.email }}: {{ comment.content }}</li>
+            {% endfor %}
+        </ul>
+
+        <form action="{{ photo.comment_link() }}" method="post">
+            <input type="text" name="content">
+            <input type="submit">
+        </form>
+    </div>
+{% endblock %}

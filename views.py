@@ -1,120 +1,115 @@
-import time
-import hashlib
-
 import flask
 
 from flask.views import MethodView
 
 from flask_login import (
-    login_user,
     login_required,
     current_user,
 )
 
-
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash,
-)
-
-from werkzeug.utils import secure_filename
+from werkzeug.exceptions import BadRequest
 
 from database import db
 
 from models import (
     User,
     Photo,
-    Like,
 )
 
+from exceptions import (
+    CoreException,
+    LoginException,
+)
 
-def create_user(email, hashed_password):
-    user = User(
-        email=email,
-        password=hashed_password
-    )
-
-    db.session.add(user)
-    db.session.commit()
+import forms
 
 
-class UserRegistrationView(MethodView):
+class FormViewMixin:
+    form_class = None
+    template_name = None
+
+    def get_form_class(self):
+        return self.form_class
+
+    def get_form(self):
+        form_class = self.get_form_class()
+
+        form = form_class()
+
+        return form
+
+    def get_template_name(self):
+        return self.template_name
+
     def get(self):
-        return flask.render_template('registration.html')
+        form = self.get_form()
+        template_name = self.get_template_name()
 
-    def post(self):
-        email = flask.request.form.get('email')
-        password = flask.request.form.get('password')
-
-        hashed_password = generate_password_hash(password=password)
-
-        create_user(
-            email=email,
-            hashed_password=hashed_password,
+        return flask.render_template(
+            template_name_or_list=template_name,
+            form=form,
         )
 
-        return 'Registration completed'
 
-
-class UserLoginView(MethodView):
-    def get(self):
-        return flask.render_template('login.html')
+class UserRegistrationView(MethodView, FormViewMixin):
+    form_class = forms.RegistrationForm
+    template_name = 'registration.html'
 
     def post(self):
-        email = flask.request.form.get('email')
-        password = flask.request.form.get('password')
+        form = self.get_form()
 
-        user = User.query.filter_by(email=email).first()
+        if form.validate_on_submit():
+            form.save()
 
-        if user is None:
-            return 'Such user not found'
-
-        is_correct = check_password_hash(
-            pwhash=user.password,
-            password=password,
+        return flask.render_template(
+            template_name_or_list=self.get_template_name(),
+            form=form,
         )
 
-        if is_correct:
-            login_user(user=user)
 
-            return 'Logged in successfully'
+class UserLoginView(MethodView, FormViewMixin):
+    form_class = forms.LoginForm
+    template_name = 'login.html'
 
-        return 'Wrong Credentials'
+    def post(self):
+        form = self.get_form()
+
+        if form.validate_on_submit():
+            try:
+                form.login()
+
+            except LoginException as exception:
+                flask.flash(message=str(exception))
+
+        return flask.render_template(
+            template_name_or_list=self.get_template_name(),
+            form=form,
+        )
 
 
-class UploadPhotoView(MethodView):
+class UploadPhotoView(MethodView, FormViewMixin):
+    form_class = forms.PhotoForm
+    template_name = 'upload_photo.html'
+
     decorators = [
         login_required,
     ]
 
-    def get(self):
-        return flask.render_template('upload_photo.html')
-
     def post(self):
-        photo_file = flask.request.files['photo']
+        form = self.get_form()
 
-        file_name_parts = photo_file.filename.split('.')
-        extension = file_name_parts[-1]
+        if form.validate_on_submit():
+            photo = form.save()
 
-        secure_original_file_name = secure_filename(photo_file.filename) + str(time.time())
-        secure_original_file_name = hashlib.sha256(secure_original_file_name.encode('utf-8')).hexdigest()
+            photo_link = photo.photo_link()
+            response = flask.redirect(location=photo_link)
 
-        file_name = flask.current_app.config['UPLOADS_DIRECTORY'] / secure_original_file_name
+            return response
 
-        photo_file.save(f'{file_name}.{extension}')
-
-        photo = Photo(
-            path=f'{secure_original_file_name}.{extension}',
-            user_id=current_user.id,
+        return flask.render_template(
+            template_name_or_list=self.get_template_name(),
+            form=form,
         )
-
-        db.session.add(photo)
-        db.session.commit()
-
-        photo_link = photo.photo_link()
-        response = flask.redirect(location=photo_link)
-
-        return response
 
 
 class ViewFile(MethodView):
@@ -137,26 +132,59 @@ class UserProfileView(MethodView):
         )
 
 
+class PhotoDetailView(MethodView):
+    def get(self, photo_id):
+        photo = Photo.query.get(photo_id)
+
+        if photo is None:
+            return 'Photo not found', 404
+
+        return flask.render_template(
+            template_name_or_list='photo_detail.html',
+            photo=photo,
+        )
+
+
 class AddLikeView(MethodView):
     decorators = [
         login_required,
     ]
 
     def post(self, photo_id):
-        already_liked = Like.query.filter(
-            Like.user_id == current_user.id,
-            Like.photo_id == photo_id,
-        ).count()
+        photo = Photo.query.get(photo_id)
 
-        if already_liked:
-            return 'Sorry, we can not accept your like more than once!'
+        if photo is None:
+            return 'Photo not found', 404
 
-        like = Like(
-            user_id=current_user.id,
-            photo_id=photo_id,
-        )
+        try:
+            like = photo.add_like(from_user=current_user)
+
+        except CoreException as exception:
+            raise BadRequest(description=str(exception)) from exception
 
         db.session.add(like)
+        db.session.commit()
+
+        return 'ok'
+
+
+class AddCommentView(MethodView):
+    decorators = [
+        login_required,
+    ]
+
+    def post(self, photo_id):
+        photo = Photo.query.get(photo_id)
+
+        if photo is None:
+            return 'Photo not found', 404
+
+        comment = photo.add_comment(
+            from_user=current_user,
+            content=flask.request.form['content'],
+        )
+
+        db.session.add(comment)
         db.session.commit()
 
         return 'ok'

@@ -1,19 +1,27 @@
 {% extends 'base.html' %}
 
+{% from 'macros/_formhelpers.html' import render_field %}
+
 {% block title %}Login{% endblock %}
 
 {% block body %}
     <form action="" method="post">
-        <label>
-            <span>E-mail</span>
-            <input type="email" name="email">
-        </label>
+        {{ form.csrf_token }}
 
-        <label>
-            <span>Password</span>
-            <input type="password" name="password">
-        </label>
+        {{ render_field(form.email) }}
+
+        {{ render_field(form.password) }}
 
         <input type="submit" value="Login">
     </form>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
 {% endblock %}
