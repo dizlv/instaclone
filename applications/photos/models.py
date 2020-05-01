@@ -1,6 +1,6 @@
 from flask import url_for
 
-from database import db
+from extensions.database import db
 from exceptions import CoreException
 
 from applications.likes.models import Like

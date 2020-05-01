@@ -7,7 +7,7 @@ from flask_login import (
     current_user,
 )
 
-from database import db
+from extensions.database import db
 
 from applications.photos.models import Photo
 

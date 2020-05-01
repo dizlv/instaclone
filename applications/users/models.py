@@ -3,7 +3,7 @@ from werkzeug.security import (
     check_password_hash,
 )
 
-from database import db
+from extensions.database import db
 
 
 class User(db.Model):

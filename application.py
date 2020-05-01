@@ -6,12 +6,12 @@ class Application(flask.Flask):
         self.config.from_pyfile('configuration.py')
 
     def configure_database(self):
-        from database import db
+        from extensions.database import db
 
         db.init_app(app=self)
 
     def configure_login_manager(self):
-        from auth import login_manager
+        from extensions.auth import login_manager
 
         login_manager.init_app(app=self)
 
@@ -39,12 +39,5 @@ class Application(flask.Flask):
 
 
 application = Application.create()
-
-
-@application.cli.command()
-def create_database():
-    from database import db
-
-    db.create_all()
 
 application.run()

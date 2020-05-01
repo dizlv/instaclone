@@ -7,7 +7,7 @@ from flask_login import (
 
 from werkzeug.exceptions import BadRequest
 
-from database import db
+from extensions.database import db
 
 from applications.photos.models import Photo
 

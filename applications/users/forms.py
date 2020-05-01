@@ -14,7 +14,7 @@ from wtforms.validators import (
 )
 
 from applications.users import models
-from database import db
+from extensions.database import db
 
 import exceptions
 

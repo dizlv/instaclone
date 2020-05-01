@@ -1,4 +1,4 @@
-from database import db
+from extensions.database import db
 
 
 class Like(db.Model):

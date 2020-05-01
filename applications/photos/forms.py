@@ -12,7 +12,7 @@ from flask_wtf.file import (
     FileRequired,
 )
 
-from database import db
+from extensions.database import db
 
 from applications.photos import models
 
