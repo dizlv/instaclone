@@ -1,4 +1,4 @@
-from extensions.database import db
+from instaclone.extensions.database import db
 
 
 class Comment(db.Model):

@@ -3,7 +3,7 @@ from werkzeug.security import (
     check_password_hash,
 )
 
-from extensions.database import db
+from instaclone.extensions.database import db
 
 
 class User(db.Model):

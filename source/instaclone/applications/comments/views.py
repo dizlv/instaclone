@@ -7,9 +7,9 @@ from flask_login import (
     current_user,
 )
 
-from extensions.database import db
+from instaclone.extensions.database import db
 
-from applications.photos.models import Photo
+from instaclone.applications.photos.models import Photo
 
 
 class AddCommentView(MethodView):

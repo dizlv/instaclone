@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from applications.users import views
+from instaclone.applications.users import views
 
 blueprint = Blueprint(
     name='users',

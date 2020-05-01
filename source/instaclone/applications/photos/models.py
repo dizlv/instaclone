@@ -1,10 +1,10 @@
 from flask import url_for
 
-from extensions.database import db
-from exceptions import CoreException
+from instaclone.extensions.database import db
+from instaclone.exceptions import CoreException
 
-from applications.likes.models import Like
-from applications.comments.models import Comment
+from instaclone.applications.likes.models import Like
+from instaclone.applications.comments.models import Comment
 
 
 class Photo(db.Model):

@@ -6,6 +6,8 @@
 
 {% block body %}
     <form action="" method="post">
+        {{ form.csrf_token }}
+
         {{ render_field(form.email) }}
 
         {{ render_field(form.password) }}
