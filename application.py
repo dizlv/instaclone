@@ -1,34 +1,44 @@
 import flask
 
-from views import (
-    UserProfileView,
-    UserRegistrationView,
-    UserLoginView,
-    UploadPhotoView,
-    ViewFile,
-    AddLikeView,
-    AddCommentView,
-    PhotoDetailView,
-)
+
+class Application(flask.Flask):
+    def load_configuration(self):
+        self.config.from_pyfile('configuration.py')
+
+    def configure_database(self):
+        from database import db
+
+        db.init_app(app=self)
+
+    def configure_login_manager(self):
+        from auth import login_manager
+
+        login_manager.init_app(app=self)
+
+    def register_applications(self):
+        from applications.users.urls import blueprint as users_blueprint
+        from applications.photos.urls import blueprint as photos_blueprint
+        from applications.likes.urls import blueprint as likes_blueprint
+        from applications.comments.urls import blueprint as comments_blueprint
+
+        self.register_blueprint(blueprint=users_blueprint)
+        self.register_blueprint(blueprint=photos_blueprint)
+        self.register_blueprint(blueprint=likes_blueprint)
+        self.register_blueprint(blueprint=comments_blueprint)
+
+    @classmethod
+    def create(cls):
+        instance = cls(__name__)
+
+        instance.load_configuration()
+        instance.configure_database()
+        instance.configure_login_manager()
+        instance.register_applications()
+
+        return instance
 
 
-def create_application():
-    application = flask.Flask(__name__)
-
-    application.config.from_pyfile('configuration.py')
-
-    from database import db
-
-    db.init_app(app=application)
-
-    from auth import login_manager
-
-    login_manager.init_app(app=application)
-
-    return application
-
-
-application = create_application()
+application = Application.create()
 
 
 @application.cli.command()
@@ -36,46 +46,5 @@ def create_database():
     from database import db
 
     db.create_all()
-
-
-application.add_url_rule(
-    rule='/registration/',
-    view_func=UserRegistrationView.as_view('registration'),
-)
-
-application.add_url_rule(
-    rule='/login/',
-    view_func=UserLoginView.as_view('login'),
-)
-
-application.add_url_rule(
-    rule='/upload_photo/',
-    view_func=UploadPhotoView.as_view('upload-photo'),
-)
-
-application.add_url_rule(
-    rule='/add_like/<photo_id>/',
-    view_func=AddLikeView.as_view('add-like'),
-)
-
-application.add_url_rule(
-    rule='/add_comment/<photo_id>/',
-    view_func=AddCommentView.as_view('add-comment'),
-)
-
-application.add_url_rule(
-    rule='/photo/<photo_id>/',
-    view_func=PhotoDetailView.as_view('photo-detail'),
-)
-
-application.add_url_rule(
-    rule='/uploads/<file_name>/',
-    view_func=ViewFile.as_view('view-file'),
-)
-
-application.add_url_rule(
-    rule='/user/<user_id>/',
-    view_func=UserProfileView.as_view('user-profile'),
-)
 
 application.run()
