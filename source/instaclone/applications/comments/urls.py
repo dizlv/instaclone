@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from applications.comments import views
+from instaclone.applications.comments import views
 
 blueprint = Blueprint(
     name='comments',

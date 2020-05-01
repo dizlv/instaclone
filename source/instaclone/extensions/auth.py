@@ -1,4 +1,4 @@
-from applications.users.models import User
+from instaclone.applications.users.models import User
 
 from flask_login import LoginManager
 

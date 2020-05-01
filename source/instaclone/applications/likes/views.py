@@ -7,11 +7,9 @@ from flask_login import (
 
 from werkzeug.exceptions import BadRequest
 
-from extensions.database import db
-
-from applications.photos.models import Photo
-
-from exceptions import CoreException
+from instaclone.extensions.database import db
+from instaclone.applications.photos.models import Photo
+from instaclone.exceptions import CoreException
 
 
 class AddLikeView(MethodView):

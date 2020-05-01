@@ -4,9 +4,9 @@ from flask.views import MethodView
 
 from flask_login import login_required
 
-from applications.photos.models import Photo
-from applications.views import FormViewMixin
-from applications.photos import forms
+from instaclone.applications.photos.models import Photo
+from instaclone.applications.views import FormViewMixin
+from instaclone.applications.photos import forms
 
 
 class UploadPhotoView(MethodView, FormViewMixin):

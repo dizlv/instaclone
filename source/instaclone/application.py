@@ -6,20 +6,20 @@ class Application(flask.Flask):
         self.config.from_pyfile('configuration.py')
 
     def configure_database(self):
-        from extensions.database import db
+        from instaclone.extensions.database import db
 
         db.init_app(app=self)
 
     def configure_login_manager(self):
-        from extensions.auth import login_manager
+        from instaclone.extensions.auth import login_manager
 
         login_manager.init_app(app=self)
 
     def register_applications(self):
-        from applications.users.urls import blueprint as users_blueprint
-        from applications.photos.urls import blueprint as photos_blueprint
-        from applications.likes.urls import blueprint as likes_blueprint
-        from applications.comments.urls import blueprint as comments_blueprint
+        from instaclone.applications.users.urls import blueprint as users_blueprint
+        from instaclone.applications.photos.urls import blueprint as photos_blueprint
+        from instaclone.applications.likes.urls import blueprint as likes_blueprint
+        from instaclone.applications.comments.urls import blueprint as comments_blueprint
 
         self.register_blueprint(blueprint=users_blueprint)
         self.register_blueprint(blueprint=photos_blueprint)

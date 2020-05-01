@@ -2,11 +2,11 @@ import flask
 
 from flask.views import MethodView
 
-from exceptions import LoginException
+from instaclone.exceptions import LoginException
 
-from applications.users import forms
-from applications.users.models import User
-from applications.views import FormViewMixin
+from instaclone.applications.users import forms
+from instaclone.applications.users.models import User
+from instaclone.applications.views import FormViewMixin
 
 
 class UserRegistrationView(MethodView, FormViewMixin):

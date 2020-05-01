@@ -12,9 +12,9 @@ from flask_wtf.file import (
     FileRequired,
 )
 
-from extensions.database import db
+from instaclone.extensions.database import db
 
-from applications.photos import models
+from instaclone.applications.photos import models
 
 
 class PhotoForm(FlaskForm):

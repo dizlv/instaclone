@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from applications.likes import views
+from instaclone.applications.likes import views
 
 blueprint = Blueprint(
     name='likes',

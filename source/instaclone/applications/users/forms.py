@@ -13,10 +13,10 @@ from wtforms.validators import (
     EqualTo,
 )
 
-from applications.users import models
-from extensions.database import db
+from instaclone.applications.users import models
+from instaclone.extensions.database import db
 
-import exceptions
+from instaclone import exceptions
 
 
 class RegistrationForm(FlaskForm):

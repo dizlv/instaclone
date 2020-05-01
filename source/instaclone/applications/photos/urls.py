@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from applications.photos import views
+from instaclone.applications.photos import views
 
 blueprint = Blueprint(
     name='photos',
