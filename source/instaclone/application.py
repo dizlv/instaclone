@@ -20,11 +20,13 @@ class Application(flask.Flask):
         from instaclone.applications.photos.urls import blueprint as photos_blueprint
         from instaclone.applications.likes.urls import blueprint as likes_blueprint
         from instaclone.applications.comments.urls import blueprint as comments_blueprint
+        from instaclone.applications.core.urls import blueprint as core_blueprint
 
         self.register_blueprint(blueprint=users_blueprint)
         self.register_blueprint(blueprint=photos_blueprint)
         self.register_blueprint(blueprint=likes_blueprint)
         self.register_blueprint(blueprint=comments_blueprint)
+        self.register_blueprint(blueprint=core_blueprint)
 
     @classmethod
     def create(cls):
