@@ -39,7 +39,7 @@ class Photo(db.Model):
 
     def photo_link(self):
         link = url_for(
-            endpoint='view-file',
+            endpoint='photos.view-file',
             file_name=self.path,
         )
 
@@ -47,7 +47,7 @@ class Photo(db.Model):
 
     def like_link(self):
         link = url_for(
-            endpoint='add-like',
+            endpoint='likes.add-like',
             photo_id=self.id,
         )
 
@@ -55,7 +55,7 @@ class Photo(db.Model):
 
     def comment_link(self):
         link = url_for(
-            endpoint='add-comment',
+            endpoint='comments.add-comment',
             photo_id=self.id,
         )
 
