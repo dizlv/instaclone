@@ -5,7 +5,10 @@
 {% block body %}
     {% for photo in photos %}
         <div>
-            <img src="{{ photo.photo_link() }}" alt="">
+            <a href="{{ url_for('photos.photo-detail', photo_id=photo.id) }}">
+                <img src="{{ photo.photo_link() }}" alt="">
+            </a>
+
             <form action="{{ photo.like_link() }}" method="post">
                 <input type="submit" value="{{ photo.likes|length or 0 }}">
             </form>

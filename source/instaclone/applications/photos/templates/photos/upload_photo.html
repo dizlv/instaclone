@@ -6,6 +6,8 @@
 
 {% block body %}
     <form method="post" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+
         {{ render_field(form.photo) }}
 
         <input type="submit">
