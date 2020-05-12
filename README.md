@@ -13,3 +13,5 @@
 # How to update project code
 `git fetch upstream`
 `Git -> upstream/master -> Merge Into Current`
+
+FLASK_APP="instaclone.application:create_application('settings/development.py')" flask run

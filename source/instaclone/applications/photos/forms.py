@@ -38,7 +38,7 @@ class PhotoForm(FlaskForm):
 
     def fs_store(self, photo_file, file_name):
         # Generate file system path for new file
-        fs_path = flask.current_app.config['UPLOADS_DIRECTORY'] / file_name
+        fs_path = str(flask.current_app.config['UPLOADS_DIRECTORY'] / file_name)
 
         # Save file on fs
         photo_file.save(fs_path)
