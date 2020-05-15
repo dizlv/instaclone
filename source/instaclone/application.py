@@ -2,8 +2,8 @@ import flask
 
 
 class Application(flask.Flask):
-    def load_configuration(self):
-        self.config.from_pyfile('configuration.py')
+    def load_configuration(self, configuration):
+        self.config.from_pyfile(configuration)
 
     def configure_database(self):
         from instaclone.extensions.database import db
@@ -28,18 +28,13 @@ class Application(flask.Flask):
         self.register_blueprint(blueprint=comments_blueprint)
         self.register_blueprint(blueprint=core_blueprint)
 
-    @classmethod
-    def create(cls):
-        instance = cls(__name__)
 
-        instance.load_configuration()
-        instance.configure_database()
-        instance.configure_login_manager()
-        instance.register_applications()
+def create_application(configuration):
+    instance = Application(__name__)
 
-        return instance
+    instance.load_configuration(configuration=configuration)
+    instance.configure_database()
+    instance.configure_login_manager()
+    instance.register_applications()
 
-
-application = Application.create()
-
-application.run()
+    return instance
